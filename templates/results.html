@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Long to Wide</title>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+		<style>
+			.jumbotron {
+				background-color: rgba(0, 204, 220, 0.3);
+			}
+			h {
+				margin-left: 19%;
+				font-size: 20px;
+			}
+
+			.btn-default {
+				border-color: rgba(0, 204, 220, 0.3);
+				border-radius: 10px;
+				border-width: 5px;
+				padding: 10px;
+				margin-left: 40%;
+			}
+
+			.btn2 {
+				margin-left: 38%;
+			}
+
+		</style>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
+		<script>
+
+			function clickOtherButton(){
+				document.getElementById('btn2').click()
+			}
+		</script>
+
+	</head>
+	<body>
+
+		<div class="container">
+
+		  <div class="jumbotron">
+		    <h1>Long to Wide</h1>
+		    <p>Convert your data from long format to wide format. With wide format, each row will contain every timepoint for each record.</p>
+		  </div>
+			<br>
+      <h> {{label|safe}}</h>
+			<br>
+			<br>
+			<div class="container" align="left">
+				<a href="{{ url_for('return_files', filename=filename) }}" target="blank"><button class='btn btn-default btn1' onclick="clickOtherButton()">Download!</button></a>
+				<br>
+				<br>
+				<form action="/">
+					<button class='btn btn-default btn2'>Convert a new file!</button></a>
+				</form>
+   		</div>
+
+		</div>
+
+	</body>
+
+</html>

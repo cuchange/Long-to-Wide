@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Long to Wide</title>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+		<style>
+			#text_field_1, #text_field_2 {
+				width: 80%;
+			}
+			.jumbotron {
+				background-color: rgba(0, 204, 220, 0.3);
+			}
+			#submit_button {
+				border-color: rgba(0, 204, 220, 0.3);
+				border-radius: 10px;
+				border-width: 5px;
+				padding: 10px;
+				margin-left: 45%;
+
+			}
+			#form {
+				width: 70%;
+				margin-left: 15%;
+			}
+		</style>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+		<script>
+			function validateForm() {
+				var x = document.getElementById("text_field_1").value;
+				var y = document.getElementById("text_field_2").value;
+
+				var newArr = x.split("\\")
+				var new_x = newArr[newArr.length-1]
+
+				if (new_x == "" || y == "") {
+					alert("File name(s) must be filled out.")
+					return false;
+				}
+				if(new_x === y) {
+					alert("File names must be different.")
+					return false;
+				}
+				if(new_x.length < 4 || y.length < 4 || new_x.substring(new_x.length - 4, new_x.length) != ".csv" || y.substring(y.length - 4, y.length) != ".csv") {
+					alert("File(s) must be a csv.")
+					return false;
+				}
+				if(!document.getElementById("front_option").checked && !document.getElementById("back_option").checked) {
+					alert("Must select a naming option (front or back).")
+					return false;
+				}
+			}
+		</script>
+	</head>
+
+	<body>
+
+		<div class="container">
+
+		  <div class="jumbotron">
+		    <h1>Long to Wide</h1>
+		    <p>Convert your data from long format to wide format. With wide format, each row will contain every timepoint for each record.</p>
+		  </div>
+		  <p> Note: only csv files will be accepted. </p>
+
+
+		  <form name="myForm" onsubmit="return validateForm()" id="form" action="{{ url_for('handle_data') }}" method='POST' enctype = "multipart/form-data">
+		  	<div class="well">
+		  		Choose the long data file you wish to convert. (must be .csv) <br>
+		  		<input type="file" name="original_file_name" id="text_field_1" value="">
+		  	</div>
+		  	<div class="well">
+		  		Enter the name you wish your new data file to have! (include .csv)<br>
+					Note: Do NOT put the name of the long data file here.<br>
+		  		<input type="text" name="new_file_name" placeholder=" New File Name" id="text_field_2" value="">
+		  	</div>
+		  	<div class="well">
+		  		Would you like your column names to have the timepoint at the front or the back of the name (e.g T01_task vs. task_T01)?
+		  		<br>
+		  		<input type="radio" name=timeptdisplay id="front_option" value="False">  Front<br>
+		  		<input type="radio" name=timeptdisplay id="back_option" value="True">  Back<br>
+		  	</div>
+
+		 	<input type="submit" value="Submit" id="submit_button">
+
+		  </form>
+
+		</div>
+
+	</body>
+
+</html>
