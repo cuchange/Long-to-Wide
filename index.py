@@ -27,10 +27,16 @@ def handle_data():
     new_file = my_form['new_file_name']
     display_option = my_form['timeptdisplay']
 
-    label = datafix_2.datafix(original_filename, new_file, display_option)
+    [label1, label2, label3, label4, isError] = datafix_2.datafix(original_filename, new_file, display_option)
     filename = new_file
-    return render_template('results.html', label=label, filename=filename)
+    if isError:
+        return handle_error(label1, label2, label3, label4)
+    else:
+        return render_template('results.html', label=label1, filename=filename)
 
+@app.route('/handle_error')
+def handle_error(return_message1, return_message2, return_message3, return_message4):
+    return render_template('error_handler.html', message1=return_message1, message2=return_message2, message3=return_message3, message4=return_message4)
 
 def clear_folder():
     folder = 'uploads'

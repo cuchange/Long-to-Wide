@@ -142,8 +142,8 @@ def datafix(long_filename, wide_filename, display_back):
                     dw.writerow(value[val] for val in keys)
 
                 y.close()
-        return 'Successfully converted file! Click to download your new wide format file!'
+        return ['Successfully converted file! Click to download your new wide format file!', '', '', '', False]
     except csv.Error:
-        return 'Error: Input file not a valid csv/csv has no data. Check your file.'
+        return ['Error: One or more of the following errors occured. Check your file.', 'Input file is not a valid csv.', 'File has no data.', 'File is in incorrect format.', True]
     except FileNotFoundError:
-        return 'Error: File not found.'
+        return ['Error: File not found.', '', '', '', True]
