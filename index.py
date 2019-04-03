@@ -41,12 +41,13 @@ def handle_error(return_message1, return_message2, return_message3, return_messa
 def clear_folder():
     folder = 'uploads'
     for the_file in os.listdir(folder):
-        file_path = os.path.join(folder, the_file)
-        try:
-            if os.path.isfile(file_path):
-                os.unlink(file_path)
-        except Exception as e:
-             print(str(e))
+        if the_file not in ['uploads.txt']:
+            file_path = os.path.join(folder, the_file)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+            except Exception as e:
+                 print(str(e))
 
 
 
