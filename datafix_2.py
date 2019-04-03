@@ -134,7 +134,7 @@ def datafix(long_filename, wide_filename, display_back):
                 long_data = csv.DictReader(long_file)
                 [record_dict, newkeys] = longToWide(long_data, long_file, display_back)
                 if record_dict == 'File is not in long format.':
-                    return record_dict
+                    return [record_dict, '', '', '', True]
                 dw = csv.writer(y)
                 dw.writerow(newkeys)
                 for key, value in record_dict.items():
