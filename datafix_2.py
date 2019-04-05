@@ -57,10 +57,10 @@ def longToWide(long_data, long_file, display_back):
     record_list = [[None] * 4 for _ in range(len(same_record_list))]
 
     timepoints = ['T00', 'T01', 'Ta2', 'Tb2']
-    timepoints_full = [['Baseline (CINC) (Arm 1: Flower)', 'Baseline (CINC) (Arm 2: Edible)', 'Baseline (CINC) (Arm 3: Control)'],
-     ['2-Week (CINC) (Arm 1: Flower)', '2-Week (CINC) (Arm 2: Edible)', '2-Week (CINC) (Arm 3: Control)'],
-     ['Pre-Use Mobile Lab (Arm 1: Flower)', 'Pre-Use Mobile Lab (Arm 2: Edible)', 'Pre-Use Mobile Lab (Arm 3: Control)'],
-     ['Immediate Post-Use Mobile Lab (Arm 1: Flower)', 'Immediate Post-Use Mobile Lab (Arm 2: Edible)', 'Immediate Post-Use Mobile Lab (Arm 3: Control)']]
+    timepoints_full = [['T00 (Arm 1: Flower)', 'T00 (Arm 2: Edible)', 'T00 (Arm 3: Control)'],
+     ['T01 (Arm 1: Flower)', 'T01 (Arm 2: Edible)', 'T01 (Arm 3: Control)'],
+     ['Ta2 (Arm 1: Flower)', 'Ta2 (Arm 2: Edible)', 'Ta2 (Arm 3: Control)'],
+     ['Tb2 (Arm 1: Flower)', 'Tb2 (Arm 2: Edible)', 'Tb2 (Arm 3: Control)']]
 
     long_file.seek(0)
     next(long_data)
