@@ -120,6 +120,11 @@ def longToWide(long_data, long_file, display_back):
                         newkeys.append(og_key + '_' + t)
                     else:
                         newkeys.append(t + '_' + og_key)
+                elif og_key in ['Event Name']:
+                    if display_back:
+                        newkeys.append('Arm_' + t)
+                    else:
+                        newkeys.append(t + '_Arm')
 
 
 
@@ -144,6 +149,12 @@ def longToWide(long_data, long_file, display_back):
                         if row[1] == group:
                             index2 = timepoints_full.index(time)
                             new_row.remove(group)
+                            if time.index(group) == 0:
+                                new_row.insert(0,'Flower')
+                            elif time.index(group) == 1:
+                                new_row.insert(0,'Edible')
+                            elif time.index(group) == 2:
+                                new_row.insert(0,'Control')
 
         record_list[index1][index2] = new_row
 
