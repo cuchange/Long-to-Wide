@@ -27,7 +27,7 @@ def handle_data():
     new_file = my_form['new_file_name']
     display_option = my_form['timeptdisplay']
 
-    [label1, label2, label3, label4, isError] = datafix_2.datafix(original_filename, new_file, display_option)
+    [label1, label2, label3, label4, isError] = datafix_2.datafix(original_filename, new_file, display_option == 'True')
     filename = new_file
     if isError:
         return handle_error(label1, label2, label3, label4)
