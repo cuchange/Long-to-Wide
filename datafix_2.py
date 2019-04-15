@@ -158,8 +158,8 @@ def longToWide(long_data, long_file, display_back):
 
 
 def datafix(long_filename, wide_filename, display_back):
-    old_file_path = long_filename
-    path_to_file_new = wide_filename
+    old_file_path = 'uploads/' + long_filename
+    path_to_file_new = 'uploads/' + wide_filename
 
     try:
         with open(path_to_file_new, 'w') as y:
