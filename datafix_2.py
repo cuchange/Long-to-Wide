@@ -9,38 +9,58 @@ import cgi
 import cgitb
 cgitb.enable()
 
+def getColNames(long_data):
+    col_names = []
+    for row in long_data:
+        if row[0] in ['Record ID']:
+            col_names = row
+    return col_names
 
 def createRecordList(long_data):
     distinct_records = set([])
 
     for row in long_data:
-        distinct_records.add(row['Record ID'])
+        if row[0] not in ['Record ID']:
+            distinct_records.add(row[0])
 
-    return list(distinct_records)
+    new_list = sorted(list(distinct_records))
 
-def makeCompleteRow(newkeys, original_keys, same_rec, display_back):
-    wide_row = dict.fromkeys(newkeys)
+    return new_list
+
+
+
+def makeCompleteRow(same_rec, record_number, width):
+    wide_row = []
+    wide_row.append(record_number)
     #same_rec[0] --> T00, same_rec[1] --> T01, same_rec[2] --> Ta2, same_rec[3] --> Tb2
-    for og_key in original_keys:
-        if og_key not in ['Record ID', 'Event Name']:
-            if display_back == 'True':
-                if same_rec[0] is not None:
-                    wide_row[og_key + '_T00'] = same_rec[0][og_key]
-                if same_rec[1] is not None:
-                    wide_row[og_key + '_T01'] = same_rec[1][og_key]
-                if same_rec[2] is not None:
-                    wide_row[og_key + '_Ta2'] = same_rec[2][og_key]
-                if same_rec[3] is not None:
-                    wide_row[og_key + '_Tb2'] = same_rec[3][og_key]
-            else:
-                if same_rec[0] is not None:
-                    wide_row['T00_' + og_key] = same_rec[0][og_key]
-                if same_rec[1] is not None:
-                    wide_row['T01_' + og_key] = same_rec[1][og_key]
-                if same_rec[2] is not None:
-                    wide_row['Ta2_' + og_key] = same_rec[2][og_key]
-                if same_rec[3] is not None:
-                    wide_row['Tb2_' + og_key] = same_rec[3][og_key]
+    if same_rec[0] is not None:
+        for val in same_rec[0]:
+            wide_row.append(val)
+    else:
+        for _ in range(width):
+            wide_row.append('')
+
+    if same_rec[1] is not None:
+        for val in same_rec[1]:
+            wide_row.append(val)
+    else:
+        for _ in range(width):
+            wide_row.append('')
+
+    if same_rec[2] is not None:
+        for val in same_rec[2]:
+            wide_row.append(val)
+    else:
+        for _ in range(width):
+            wide_row.append('')
+
+    if same_rec[3] is not None:
+        for val in same_rec[3]:
+            wide_row.append(val)
+    else:
+        for _ in range(width):
+            wide_row.append('')
+
 
     return wide_row
 
@@ -48,10 +68,15 @@ def makeCompleteRow(newkeys, original_keys, same_rec, display_back):
 
 def longToWide(long_data, long_file, display_back):
 
+    original_keys = getColNames(long_data)
+
+    #go back to beginning of file
+    long_file.seek(0)
+    long_data = csv.reader(long_file)
 
     #all distinct record ids
     ### Note: records are not in same order occasioanlly -> dummy records can be mixed in
-    same_record_list = sorted(createRecordList(long_data))
+    same_record_list = createRecordList(long_data)
 
     #all records indexed at same record id with different timepoints
     record_list = [[None] * 4 for _ in range(len(same_record_list))]
@@ -62,68 +87,79 @@ def longToWide(long_data, long_file, display_back):
      ['Ta2 (Arm 1: Flower)', 'Ta2 (Arm 2: Edible)', 'Ta2 (Arm 3: Control)'],
      ['Tb2 (Arm 1: Flower)', 'Tb2 (Arm 2: Edible)', 'Tb2 (Arm 3: Control)']]
 
+    #go back to beginning of file, skipping first row (column names)
     long_file.seek(0)
     next(long_data)
 
+
     newkeys = []
-    original_keys = []
     isLongData = False
+
+    #declare full data matrix: store values for new csv
+    #new_data = [['' for _ in range(((len(original_keys)-2)*4)+1)] for _ in range(len(same_record_list)+1)]
+    new_data = [[''] for _ in range(len(same_record_list)+1)]
 
     #make record_list
     for row in long_data:
 
-        #makes new header names
-        original_keys = list(dict.keys(row))
-
+        #check if file is in long data format (has an event name attribute)
         for key in original_keys:
             if key == 'Event Name':
                 isLongData = True
 
         if isLongData == False:
-            return ['File is not in long format.', '']
+            return 'File is not in long format.'
 
+        #make new keys with appended timepoints
         newkeys = ['Record ID']
         for t in timepoints:
             for og_key in original_keys:
                 if og_key not in ['Record ID', 'Event Name']:
                     # name displays timepoint at the back
-                    if display_back == 'True':
+                    if display_back:
                         newkeys.append(og_key + '_' + t)
                     else:
                         newkeys.append(t + '_' + og_key)
 
-        new_row = {}
-        for og_key in original_keys:
-            new_row[og_key] = row[og_key]
+
+
+        #put column name in full data matrix
+        new_data[0] = newkeys;
+
+
+        new_row = []
+        for val in row:
+            new_row.append(val)
+
 
         #map the row to the corresponding slot in record_list[i][j] where i is the record number and j is the timepoint
         index1 = -1
         index2 = -1
         for rec in same_record_list:
-            if row['Record ID'] == rec:
+            if row[0] == rec:
                 index1 = same_record_list.index(rec)
+                new_row.remove(rec)
                 for time in timepoints_full:
                     for group in time:
-                        if row['Event Name'] == group:
+                        if row[1] == group:
                             index2 = timepoints_full.index(time)
+                            new_row.remove(group)
 
         record_list[index1][index2] = new_row
 
-    record_dict = {}
 
     #make one row for same record ID
-    for same_rec in record_list:
-        wide_row = makeCompleteRow(newkeys, original_keys, same_rec, display_back)
-        wide_row['Record ID'] = same_record_list[record_list.index(same_rec)]
-        record_dict[same_record_list[record_list.index(same_rec)]] = wide_row
+    for index, same_rec in enumerate(record_list):
+        wide_row = makeCompleteRow(same_rec, same_record_list[index], len(original_keys)-2)
+        new_data[index+1] = wide_row
 
-    return [record_dict, newkeys]
+    return new_data
 
 
 
 def datafix(long_filename, wide_filename, display_back):
-    old_file_path = 'uploads/' + long_filename
-    path_to_file_new = 'uploads/' + wide_filename
+    old_file_path = long_filename
+    path_to_file_new = wide_filename
 
     try:
         with open(path_to_file_new, 'w') as y:
@@ -131,17 +167,20 @@ def datafix(long_filename, wide_filename, display_back):
                 start = long_file.read(4096)
                 dialect = csv.Sniffer().sniff(start)
                 long_file.seek(0)
-                long_data = csv.DictReader(long_file)
-                [record_dict, newkeys] = longToWide(long_data, long_file, display_back)
-                if record_dict == 'File is not in long format.':
-                    return [record_dict, '', '', '', True]
+                long_data = csv.reader(long_file)
+
+                wide_data = longToWide(long_data, long_file, display_back)
+
+                if wide_data == 'File is not in long format.':
+                    return [wide_data, '', '', '', True]
+
                 dw = csv.writer(y)
-                dw.writerow(newkeys)
-                for key, value in record_dict.items():
-                    keys = list(dict.keys(value))
-                    dw.writerow(value[val] for val in keys)
+
+                for row in wide_data:
+                    dw.writerow(row)
 
                 y.close()
+
         return ['Successfully converted file! Click to download your new wide format file!', '', '', '', False]
     except csv.Error:
         return ['Error: One or more of the following errors occured. Check your file.', 'Input file is not a valid csv.', 'File has no data.', 'File is in incorrect format.', True]
