@@ -25,9 +25,10 @@ def handle_data():
     my_form = request.form
 
     new_file = my_form['new_file_name']
+    project_option = my_form['project']
     display_option = my_form['timeptdisplay']
 
-    [label1, label2, label3, label4, isError] = datafix_2.datafix(original_filename, new_file, display_option == 'True')
+    [label1, label2, label3, label4, isError] = datafix_2.datafix(original_filename, 'new_long_file.csv', new_file, display_option == 'True', project_option == 'True')
     filename = new_file
     if isError:
         return handle_error(label1, label2, label3, label4)
