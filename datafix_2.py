@@ -231,10 +231,10 @@ def longToWideOASIS(long_data, long_file, display_back):
     return new_data
 
 
-def write_new_file(long_filename, new_file_name):
+def write_new_file(long_filename_path, new_file_name_path):
     try:
-        with open(new_file_name, 'w') as new_long_file:
-            with open(long_filename, newline='', encoding='latin-1', errors='strict') as long_file:
+        with open(new_file_name_path, 'w') as new_long_file:
+            with open(long_filename_path, newline='', encoding='latin-1', errors='strict') as long_file:
                 long_data = csv.reader(long_file)
                 dw = csv.writer(new_long_file)
                 for row in long_data:
@@ -248,12 +248,24 @@ def write_new_file(long_filename, new_file_name):
         print("Error: UnicodeDecodeError")
 
 
-def datafix(filename, long_filename, wide_filename, display_back, is_oasis):
+def checkWhatData(filepath):
+    try:
+        with open(filepath, newline='') as long_file:
+            start = long_file.read(4096)
+            dialect = csv.Sniffer().sniff(start)
+            return True
+    except UnicodeDecodeError:
+        return False
+
+
+def datafix(filename, long_filename, wide_filename, display_back):
+
+    is_oasis = checkWhatData('uploads/' + filename)
 
     if is_oasis:
         old_file_path = 'uploads/' + filename
     else:
-        write_new_file(filename, long_filename)
+        write_new_file('uploads/' + filename, 'uploads/' + long_filename)
         old_file_path = 'uploads/' + long_filename
 
 
