@@ -7,7 +7,7 @@ import json
 def getColNames(long_data):
     col_names = []
     for row in long_data:
-        if row[0] in ['Record ID']:
+        if row[0] in ['Record ID', 'record_id']:
             col_names = row
     return col_names
 
@@ -15,7 +15,7 @@ def createRecordList(long_data):
     distinct_records = set([])
 
     for row in long_data:
-        if row[0] not in ['Record ID']:
+        if row[0] not in ['Record ID', 'record_id']:
             distinct_records.add(row[0])
 
     new_list = sorted(list(distinct_records))
@@ -57,7 +57,7 @@ def makeCompleteRow(same_rec, record_number, width):
     return wide_row
 
 
-def longToWidePRISM(long_data, long_file, display_back):
+def longToWidePRISM(long_data, long_file, display_back, isRaw):
 
     original_keys = getColNames(long_data)
 
@@ -73,7 +73,10 @@ def longToWidePRISM(long_data, long_file, display_back):
     record_list = [[None] * 4 for _ in range(len(same_record_list))]
 
     timepoints = ['T00', 'Ta1', 'Tb1', 'Tc1']
-    timepoints_full = ['T00', 'Ta1', 'Tb1', 'Tc1']
+    if isRaw:
+        timepoints_full = ['t00_arm_1', 'ta1_arm_1', 'tb1_arm_1', 'tc1_arm_1']
+    else:
+        timepoints_full = ['T00', 'Ta1', 'Tb1', 'Tc1']
 
     #go back to beginning of file, skipping first row (column names)
     long_file.seek(0)
@@ -91,17 +94,20 @@ def longToWidePRISM(long_data, long_file, display_back):
 
         #check if file is in long data format (has an event name attribute)
         for key in original_keys:
-            if key == 'Event Name':
+            if key == 'Event Name' or key == 'redcap_event_name':
                 isLongData = True
 
         if isLongData == False:
             return 'File is not in long format.'
 
         #make new keys with appended timepoints
-        newkeys = ['Record ID']
+        if isRaw:
+            newkeys = ['record_id']
+        else:
+            newkeys = ['Record ID']
         for t in timepoints:
             for og_key in original_keys:
-                if og_key not in ['Record ID', 'Event Name']:
+                if og_key not in ['Record ID', 'Event Name', 'redcap_event_name', 'record_id']:
                     # name displays timepoint at the back
                     if display_back:
                         newkeys.append(og_key + '_' + t)
@@ -136,7 +142,7 @@ def longToWidePRISM(long_data, long_file, display_back):
 
     return new_data
 
-def longToWideOASIS(long_data, long_file, display_back):
+def longToWideOASIS(long_data, long_file, display_back, isRaw):
 
     original_keys = getColNames(long_data)
 
@@ -152,10 +158,16 @@ def longToWideOASIS(long_data, long_file, display_back):
     record_list = [[None] * 4 for _ in range(len(same_record_list))]
 
     timepoints = ['T00', 'T01', 'Ta2', 'Tb2']
-    timepoints_full = [['T00 (Arm 1: Flower)', 'T00 (Arm 2: Edible)', 'T00 (Arm 3: Control)'],
-     ['T01 (Arm 1: Flower)', 'T01 (Arm 2: Edible)', 'T01 (Arm 3: Control)'],
-     ['Ta2 (Arm 1: Flower)', 'Ta2 (Arm 2: Edible)', 'Ta2 (Arm 3: Control)'],
-     ['Tb2 (Arm 1: Flower)', 'Tb2 (Arm 2: Edible)', 'Tb2 (Arm 3: Control)']]
+    if isRaw:
+        timepoints_full = [['t00_arm_1', 't00_arm_2', 't00_arm_3'],
+         ['t01_arm_1', 't01_arm_2', 't01_arm_3'],
+         ['ta2_arm_1', 'ta2_arm_2', 'ta2_arm_3'],
+         ['tb2_arm_1', 'tb2_arm_2', 'tb2_arm_3']]
+    else:
+        timepoints_full = [['T00 (Arm 1: Flower)', 'T00 (Arm 2: Edible)', 'T00 (Arm 3: Control)'],
+         ['T01 (Arm 1: Flower)', 'T01 (Arm 2: Edible)', 'T01 (Arm 3: Control)'],
+         ['Ta2 (Arm 1: Flower)', 'Ta2 (Arm 2: Edible)', 'Ta2 (Arm 3: Control)'],
+         ['Tb2 (Arm 1: Flower)', 'Tb2 (Arm 2: Edible)', 'Tb2 (Arm 3: Control)']]
 
     #go back to beginning of file, skipping first row (column names)
     long_file.seek(0)
@@ -173,23 +185,26 @@ def longToWideOASIS(long_data, long_file, display_back):
 
         #check if file is in long data format (has an event name attribute)
         for key in original_keys:
-            if key == 'Event Name':
+            if key == 'Event Name'or key == 'redcap_event_name':
                 isLongData = True
 
         if isLongData == False:
             return 'File is not in long format.'
 
         #make new keys with appended timepoints
-        newkeys = ['Record ID']
+        if isRaw:
+            newkeys = ['record_id']
+        else:
+            newkeys = ['Record ID']
         for t in timepoints:
             for og_key in original_keys:
-                if og_key not in ['Record ID', 'Event Name']:
+                if og_key not in ['Record ID', 'Event Name', 'redcap_event_name', 'record_id']:
                     # name displays timepoint at the back
                     if display_back:
                         newkeys.append(og_key + '_' + t)
                     else:
                         newkeys.append(t + '_' + og_key)
-                elif og_key in ['Event Name']:
+                elif og_key in ['Event Name', 'redcap_event_name']:
                     if display_back:
                         newkeys.append('Arm_' + t)
                     else:
@@ -251,11 +266,26 @@ def write_new_file(long_filename_path, new_file_name_path):
 def checkWhatData(filepath):
     try:
         with open(filepath, newline='') as long_file:
-            start = long_file.read(4096)
-            dialect = csv.Sniffer().sniff(start)
+            dialect = csv.Sniffer().sniff(long_file.readline())
+            long_file.seek(0)
+            long_data = csv.reader(long_file)
+            for row in long_data:
+                if row[1] in ['tc1_arm_1', 'Tc1', 'tb1_arm_1', 'Tb1', 'ta1_arm_1', 'Ta1']:
+                    return False
+
             return True
     except UnicodeDecodeError:
         return False
+
+def checkIfRawData(filepath):
+    with open(filepath, newline='') as long_file:
+        long_data = csv.reader(long_file)
+        for row in long_data:
+            if row[0] in ['record_id']:
+                return True
+            else:
+                return False
+    return False
 
 
 def datafix(filename, long_filename, wide_filename, display_back):
@@ -271,17 +301,19 @@ def datafix(filename, long_filename, wide_filename, display_back):
 
     path_to_file_new = 'uploads/' + wide_filename
 
+    isRaw = checkIfRawData(old_file_path)
+
     try:
         with open(path_to_file_new, 'w') as y:
             with open(old_file_path, newline='') as long_file:
-                start = long_file.read(4096)
-                dialect = csv.Sniffer().sniff(start)
+                dialect = csv.Sniffer().sniff(long_file.readline())
                 long_file.seek(0)
                 long_data = csv.reader(long_file)
+
                 if is_oasis:
-                    wide_data = longToWideOASIS(long_data, long_file, display_back)
+                    wide_data = longToWideOASIS(long_data, long_file, display_back, isRaw)
                 else:
-                    wide_data = longToWidePRISM(long_data, long_file, display_back)
+                    wide_data = longToWidePRISM(long_data, long_file, display_back, isRaw)
 
                 if wide_data == 'File is not in long format.':
                     return [wide_data, '', '', '', True]
