@@ -6,18 +6,24 @@ import json
 
 def getColNames(long_data):
     col_names = []
+    record_id_labels = ['Record ID', 'record_id', 'PID is the five digit pin + entry date + random number', 'pid']
     for row in long_data:
-        if row[0] in ['Record ID', 'record_id', 'PID is the five digit pin + entry date + random number', 'pid']:
+        if row[0] in record_id_labels or row[1] in record_id_labels:
             col_names = row
+            return col_names
     return col_names
 
 def createRecordList(long_data, otlfb):
     distinct_records = set([])
-
+    report_flag = False
     for row in long_data:
         if otlfb:
-            if row[2] not in ['Subject ID', 'subid', '']:
+            if row[0] in ['Subject ID', 'subid', '']:
+                report_flag = True
+            elif row[2] not in ['Subject ID', 'subid', ''] and not report_flag:
                 distinct_records.add(row[2])
+            elif report_flag and row[0] not in ['Subject ID', 'subid', '']:
+                distinct_records.add(row[0])
         else:
             if row[0] not in ['Record ID', 'record_id']:
                 distinct_records.add(row[0])
@@ -296,7 +302,6 @@ def longToWideOTLFB(long_data, long_file, display_back, isRaw):
                         newkeys.append(t + '_' + og_key)
 
 
-
         #put column name in full data matrix
         new_data[0] = newkeys;
 
@@ -311,11 +316,11 @@ def longToWideOTLFB(long_data, long_file, display_back, isRaw):
         index1 = -1
         index2 = -1
         for rec in same_record_list:
-            if row[2] == rec:
+            if row[2] == rec or row[0] == rec:
                 index1 = same_record_list.index(rec)
                 new_row.remove(rec)
                 for time in timepoints_full:
-                    if row[3] == time:
+                    if row[3] == time or row[4] == time:
                         index2 = timepoints_full.index(time)
                         new_row.remove(time)
 
@@ -357,7 +362,7 @@ def checkWhatData(filepath):
                     return 'PRISM'
                 elif row[1] in ['t01_arm_1', 't01_arm_2', 't01_arm_3', 'T01 (Arm 1: Flower)', 'T01 (Arm 2: Edible)', 'T01 (Arm 3: Control)']:
                     return 'OASIS'
-                elif row[0] in ['PID is the five digit pin + entry date + random number', 'pid']:
+                elif row[0] in ['PID is the five digit pin + entry date + random number', 'pid'] or row[1] in ['PID is the five digit pin + entry date + random number', 'pid']:
                     return 'OTLFB'
         return 'Invalid'
     except:
