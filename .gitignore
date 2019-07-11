@@ -1,0 +1,10 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Mac OS
+.DS_Store
+
+# ignoring uploaded csv and generated csv
+uploads/
+*.csv
