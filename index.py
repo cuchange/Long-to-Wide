@@ -2,12 +2,15 @@ import os
 from flask import Flask, render_template, request, redirect, Response, send_from_directory, send_file, url_for
 from werkzeug.utils import secure_filename
 import datafix_2
+import pandas as pd
 
 app = Flask(__name__)
 
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+#TODO: files named the same thing as previous uploads output the same thing as the previous upload
+#rather than outputting the proper 
 
 @app.route('/')
 def index():
@@ -17,7 +20,7 @@ def index():
 
 @app.route('/handle_data', methods=['POST'])
 def handle_data():
-
+    clear_folder()
     f = request.files['original_file_name']
     original_filename = secure_filename(f.filename)
     f.save(os.path.join(app.config['UPLOAD_FOLDER'], original_filename))
@@ -26,29 +29,39 @@ def handle_data():
 
     new_file = my_form['new_file_name']
     display_option = my_form['timeptdisplay']
+    is_redcap = my_form['isredcap']
 
-    [label1, label2, label3, label4, isError] = datafix_2.datafix(original_filename, new_file, display_option == 'True')
-    filename = new_file
-    if isError:
-        return handle_error(label1, label2, label3, label4)
+    if is_redcap == 'True':
+        id_col = None
+        tp_col = None
     else:
-        return render_template('results.html', label=label1, filename=filename)
+        id_col = my_form['subject_id_col']
+        tp_col = my_form['timepoint_col']
+
+    duplicates, missingTPs, isError, errors = datafix_2.datafix2(original_filename, new_file, display_option, is_redcap, id_col, tp_col)
+
+    if isError:
+        return handle_error(errors)
+    else:
+        if isinstance(duplicates, pd.Series):
+            duplicates = duplicates.unique()
+        if isinstance(missingTPs, pd.Series):
+            missingTPs = missingTPs.unique()
+        filename = new_file
+        return render_template('results.html', duplicates=duplicates, missingTPs=missingTPs, filename=filename)
+    
 
 @app.route('/handle_error')
-def handle_error(return_message1, return_message2, return_message3, return_message4):
-    return render_template('error_handler.html', message1=return_message1, message2=return_message2, message3=return_message3, message4=return_message4)
+def handle_error(return_errors):
+    return render_template('error_handler.html', message1=return_errors)
+
 
 def clear_folder():
     folder = 'uploads'
-    for the_file in os.listdir(folder):
-        if the_file not in ['uploads.txt']:
-            file_path = os.path.join(folder, the_file)
-            try:
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-            except Exception as e:
-                 print(str(e))
 
+    filelist = [ f for f in os.listdir(folder) if f.endswith(".csv") ]
+    for f in filelist:
+        os.remove(os.path.join(folder, f))
 
 
 @app.route('/return_files/<path:filename>')
@@ -59,6 +72,7 @@ def return_files(filename):
         return send_from_directory(source, filename=filename, as_attachment=True, mimetype='text/csv' ,attachment_filename=filename)
     except Exception as e:
         return str(e)
+
 
 
 if __name__ == "__main__":
