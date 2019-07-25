@@ -50,6 +50,22 @@
 					return false;
 				}
 			}
+
+			function displayQuestion(answer) {
+
+				if (answer == "False") { 
+
+  					document.getElementById('subject_id_column').style.display = "block";
+					document.getElementById('timepoint_column').style.display = "block";
+
+				} else if (answer == "True") {
+
+					document.getElementById('subject_id_column').style.display = "none";
+					document.getElementById('timepoint_column').style.display = "none";
+
+				}
+
+			}
 		</script>
 	</head>
 
@@ -73,20 +89,37 @@
 		  		Enter the name you wish your new data file to have! (include .csv)<br>
 					Note: Do NOT put the name of the long data file here.<br>
 		  		<input type="text" name="new_file_name" placeholder=" New File Name" id="text_field_2" value="">
-		  	</div>
+			</div>
+			  
 		  	<div class="well">
 		  		Would you like your column names to have the timepoint at the front or the back of the variable name (e.g T01_task vs. task_T01)?
 		  		<br>
-		  		<input type="radio" name=timeptdisplay id="front_option" value="False">  Front<br>
-		  		<input type="radio" name=timeptdisplay id="back_option" value="True">  Back<br>
+		  		<input type="radio" name="timeptdisplay" id="front_option" value="False">  Front<br>
+		  		<input type="radio" name="timeptdisplay" id="back_option" value="True">  Back<br>
+			  </div>
+			  
+			<div class="well">
+				Is the csv from a Redcap export?
+				<br>
+				<input type="radio" name="isredcap" id="is_redcap_yes" value="True" onchange="displayQuestion(this.value)">  Yes<br>
+				<input type="radio" name="isredcap" id="is_redcap_no" value="False" onchange="displayQuestion(this.value)">  No<br>
+			</div>
+
+			<div class="well" style="display: none" id="subject_id_column">
+				Enter the title of the column that contains the subject IDs<br>
+				<input type="text" name="subject_id_col" placeholder=" Subject ID Column" id="text_field_3" value="">
 		  	</div>
+
+		  	<div class="well" style="display: none" id="timepoint_column">
+			  	Enter the title of the column that contains the timepoints<br>
+				<input type="text" name="timepoint_col" placeholder=" Timepoint Column" id="text_field_4" value="">
+	  		</div>
 
 		 	<input type="submit" value="Submit" id="submit_button">
 
 		  </form>
 
 		</div>
-
 	</body>
 
 </html>
