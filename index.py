@@ -6,11 +6,11 @@ import pandas as pd
 
 app = Flask(__name__)
 
-UPLOAD_FOLDER = 'uploads'
+UPLOAD_FOLDER = 'uploads/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 #TODO: files named the same thing as previous uploads output the same thing as the previous upload
-#rather than outputting the proper 
+#rather than outputting the proper
 
 @app.route('/')
 def index():
@@ -49,7 +49,7 @@ def handle_data():
             missingTPs = missingTPs.unique()
         filename = new_file
         return render_template('results.html', duplicates=duplicates, missingTPs=missingTPs, filename=filename)
-    
+
 
 @app.route('/handle_error')
 def handle_error(return_errors):
