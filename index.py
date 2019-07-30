@@ -6,7 +6,7 @@ import pandas as pd
 
 app = Flask(__name__)
 
-UPLOAD_FOLDER = 'static/uploads'
+UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 #TODO: files named the same thing as previous uploads output the same thing as the previous upload
