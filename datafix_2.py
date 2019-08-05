@@ -56,7 +56,7 @@ def getIdCol(df, redcapRaw):
 #check for missing timepoints, create and return list of subject ids with missing timepoints, 
 #return df with missing timepoint records dropped
 def checkMissing(df, idCol, tpCol):
-    if df[tpCol].isnull().values.any():
+    if df[tpCol].isnull().values.any(): #look for blank timepoints
         missingTP = df[df[tpCol].isna()][idCol]
         df = df.dropna(subset=[tpCol])
         return df, missingTP
@@ -83,7 +83,7 @@ def datafix2(filename, wide_filename, display_back, is_redcap, id_col, tp_col):
     path_to_file_new = 'uploads/' + wide_filename
 
     #create dataframe
-    df = pd.read_csv(old_file_path)
+    df = pd.read_csv(old_file_path)#, keep_default_na=False, na_values=['#N/A', '#N/A N/A', '#NA', '-1.#IND', '-1.#QNAN', '-NaN', '-nan', '1.#IND', '1.#QNAN', 'N/A', 'NA', 'NULL', 'NaN', 'n/a', 'nan', 'null']) #can change to keep certain NA values rather than turn to blanks, also need to change checkMissing function
 
     #if redcap csv, get subject id column and set timepoint column to tp
     if is_redcap == 'True':
@@ -117,6 +117,7 @@ def datafix2(filename, wide_filename, display_back, is_redcap, id_col, tp_col):
 
     df, missingTPs = checkMissing(df, id_col, tp_col) #check for missing timepoints
     df, duplicates = checkDups(df, id_col, tp_col) #check for duplicates
+    df[tp_col] = df[tp_col].astype(str) #make sure tp column values are string for mapping
     df = df.set_index([id_col, tp_col]).stack().unstack([1,2]) #convert long to wide based on id and tp
     df.columns = list(map("_".join, df.columns)) #merge stacked column names
 
