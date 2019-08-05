@@ -123,7 +123,7 @@ def datafix2(filename, wide_filename, display_back, is_redcap, id_col, tp_col):
 
     #move tp to end of column names if requested
     if display_back == 'True':
-        df.columns = df.columns.str.split('_').str[1] + '_' + df.columns.str.split('_').str[0]
+        df.columns = df.columns.str.split('_', n=1).str[1] + '_' + df.columns.str.split('_', n=1).str[0]
         
     df.to_csv(path_to_file_new)
     return duplicates, missingTPs, isAnyError, errors
