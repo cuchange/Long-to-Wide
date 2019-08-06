@@ -74,6 +74,19 @@ def checkDups(df, idCol, tpCol):
     else:
         return df, 0
 
+
+#check for duplicate column names in upload file by removing .1s and comparing names
+#read_csv automatically adds .1 to duplicate column names
+#return boolean
+def checkDupColumns(df):
+    columns = df.columns.str.replace('\.1','')
+    checkDupColumns = columns.duplicated()
+    for column in checkDupColumns:
+        if column == True:
+            return True
+    return False
+
+
 #main function
 def datafix2(filename, wide_filename, display_back, is_redcap, id_col, tp_col):
     isAnyError = False
@@ -116,7 +129,8 @@ def datafix2(filename, wide_filename, display_back, is_redcap, id_col, tp_col):
             return None, None, isAnyError, errors
 
     df, missingTPs = checkMissing(df, id_col, tp_col) #check for missing timepoints
-    df, duplicates = checkDups(df, id_col, tp_col) #check for duplicates
+    df, duplicates = checkDups(df, id_col, tp_col) #check for duplicate id/timepoint combinations
+    isDupColumns = checkDupColumns(df) #check for duplicate column names
     df[tp_col] = df[tp_col].astype(str) #make sure tp column values are string for mapping
     df = df.set_index([id_col, tp_col]).stack(dropna=False).unstack([1,2]) #convert long to wide based on id and tp
     df.columns = list(map("_".join, df.columns)) #merge stacked column names
@@ -126,4 +140,4 @@ def datafix2(filename, wide_filename, display_back, is_redcap, id_col, tp_col):
         df.columns = df.columns.str.split('_', n=1).str[1] + '_' + df.columns.str.split('_', n=1).str[0]
         
     df.to_csv(path_to_file_new)
-    return duplicates, missingTPs, isAnyError, errors
+    return duplicates, missingTPs, isAnyError, errors, isDupColumns

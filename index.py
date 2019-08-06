@@ -38,7 +38,7 @@ def handle_data():
         id_col = my_form['subject_id_col']
         tp_col = my_form['timepoint_col']
 
-    duplicates, missingTPs, isError, errors = datafix_2.datafix2(original_filename, new_file, display_option, is_redcap, id_col, tp_col)
+    duplicates, missingTPs, isError, errors, isDupColumns = datafix_2.datafix2(original_filename, new_file, display_option, is_redcap, id_col, tp_col)
 
     if isError:
         return handle_error(errors)
@@ -47,8 +47,14 @@ def handle_data():
             duplicates = duplicates.unique()
         if isinstance(missingTPs, pd.Series):
             missingTPs = missingTPs.unique()
+
+        if isDupColumns:
+            dupColumns = 'Duplicate columns may be present in upload file, look for .1, .2, .3, etc in variable names in output file'
+        else:
+            dupColumns = ''
+
         filename = new_file
-        return render_template('results.html', duplicates=duplicates, missingTPs=missingTPs, filename=filename)
+        return render_template('results.html', duplicates=duplicates, missingTPs=missingTPs, filename=filename, dupColumns=dupColumns)
 
 
 @app.route('/handle_error')
