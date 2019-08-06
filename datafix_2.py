@@ -118,7 +118,7 @@ def datafix2(filename, wide_filename, display_back, is_redcap, id_col, tp_col):
     df, missingTPs = checkMissing(df, id_col, tp_col) #check for missing timepoints
     df, duplicates = checkDups(df, id_col, tp_col) #check for duplicates
     df[tp_col] = df[tp_col].astype(str) #make sure tp column values are string for mapping
-    df = df.set_index([id_col, tp_col]).stack().unstack([1,2]) #convert long to wide based on id and tp
+    df = df.set_index([id_col, tp_col]).stack(dropna=False).unstack([1,2]) #convert long to wide based on id and tp
     df.columns = list(map("_".join, df.columns)) #merge stacked column names
 
     #move tp to end of column names if requested
