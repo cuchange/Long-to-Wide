@@ -8,7 +8,7 @@ def isRedcapRaw(df):
 
     if 'record_id' in df.columns or 'subid' in df.columns:
         return True, isError, error
-    elif 'Record ID' in df.columns or 'Subject ID' in df.columns:
+    elif 'Record ID' in df.columns or 'Subject ID' in df.columns or 'Participant ID':
         return False, isError, error
     else:
         isError = True
@@ -19,7 +19,7 @@ def isRedcapRaw(df):
 def redcapLabelTimepoint(df, redcapRaw):
     error = ''
     isError = False
-    
+
     if 'Timepoint' in df.columns:
         df = df.rename(columns={'Timepoint':'tp'})
     elif 'timepoint' in df.columns:
@@ -47,13 +47,15 @@ def getIdCol(df, redcapRaw):
         idCol = 'subid'
     elif redcapRaw == False and 'Subject ID' in df.columns:
         idCol = 'Subject ID'
+    elif redcapRaw == False and 'Participant ID' in df.columns:
+        idCol = 'Participant ID'
     else:
         idCol = None
         isError = True
         error = 'Uploaded Redcap csv missing subject id column or in unrecognized format (not record_id, Record ID, subid, or Subject ID'
     return idCol, isError, error
 
-#check for missing timepoints, create and return list of subject ids with missing timepoints, 
+#check for missing timepoints, create and return list of subject ids with missing timepoints,
 #return df with missing timepoint records dropped
 def checkMissing(df, idCol, tpCol):
     if df[tpCol].isnull().values.any(): #look for blank timepoints
@@ -62,14 +64,14 @@ def checkMissing(df, idCol, tpCol):
         return df, missingTP
     else:
         return df, 0
-         
-#check for duplicate subject id and timepoint combinations, 
-#create and return list of subject ids with duplicate timepoints, 
+
+#check for duplicate subject id and timepoint combinations,
+#create and return list of subject ids with duplicate timepoints,
 #return df with duplicate dropped
 def checkDups(df, idCol, tpCol):
     if df.duplicated(subset=[idCol, tpCol]).values.any():
         dups = df[df.duplicated(subset=[idCol, tpCol])][idCol]
-        df = df.drop_duplicates(subset=[idCol, tpCol]) 
+        df = df.drop_duplicates(subset=[idCol, tpCol])
         return df, dups
     else:
         return df, 0
@@ -104,29 +106,29 @@ def datafix2(filename, wide_filename, display_back, is_redcap, id_col, tp_col):
         if isErrorRaw: #check for errors from redcap raw check
             isAnyError = True
             errors.append(errorRaw)
-            return None, None, isAnyError, errors 
+            return None, None, isAnyError, errors, None
 
         df, isErrorTp, errorTp = redcapLabelTimepoint(df, redcapRaw)
         if isErrorTp: #check for errors from redcap timepoint label
             isAnyError = True
             errors.append(errorTp)
-            return None, None, isAnyError, errors 
+            return None, None, isAnyError, errors
 
         id_col, isErrorId, errorId = getIdCol(df, redcapRaw)
         if isErrorId: #check for errors from getting redcap ID column
             isAnyError = True
             errors.append(errorId)
-            return None, None, isAnyError, errors 
+            return None, None, isAnyError, errors, None
 
         tp_col = 'tp'
-    
+
     else:
         #check input id and timepoint columns present in csv
         if id_col not in df.columns or tp_col not in df.columns:
             isAnyError = True
             inputError = 'Input id or timepoint column not in csv'
             errors.append(inputError)
-            return None, None, isAnyError, errors
+            return None, None, isAnyError, errors, None
 
     df, missingTPs = checkMissing(df, id_col, tp_col) #check for missing timepoints
     df, duplicates = checkDups(df, id_col, tp_col) #check for duplicate id/timepoint combinations
@@ -138,6 +140,6 @@ def datafix2(filename, wide_filename, display_back, is_redcap, id_col, tp_col):
     #move tp to end of column names if requested
     if display_back == 'True':
         df.columns = df.columns.str.split('_', n=1).str[1] + '_' + df.columns.str.split('_', n=1).str[0]
-        
+
     df.to_csv(path_to_file_new)
     return duplicates, missingTPs, isAnyError, errors, isDupColumns
